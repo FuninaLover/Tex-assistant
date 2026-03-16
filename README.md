@@ -8,6 +8,10 @@
 - **表格生成**：智能生成规范Markdown表格
 - **自备API**：用户输入自己的API密钥，安全可控
 
+## 界面预览
+
+![主页面](screenshots/homepage.png)
+
 ## 在线体验
 
 (https://你的用户名.github.io/SparkTeX/)
