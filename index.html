@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tex助手</title>
+    
+    <!-- 核心库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #0a0a0a;
+        color: #e0e0e0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* 头部 */
+    .header {
+        padding: 16px 24px;
+        border-bottom: 1px solid #1e1e1e;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: #000000;
+    }
+
+    .header h1 {
+        font-size: 20px;
+        font-weight: 500;
+        color: #00ff9d;  /* 荧光绿 */
+        text-shadow: 0 0 5px rgba(0, 255, 157, 0.3);
+    }
+
+    .header .badge {
+        font-size: 12px;
+        color: #00ff9d; 
+        background: #1a1a1a;
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #00ff9d;
+        text-shadow: 0 0 3px rgba(255, 0, 255, 0.3);
+    }
+
+    /* 主容器 */
+    .main {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+    }
+
+    /* 左侧面板 */
+    .left-panel {
+        width: 40%;
+        border-right: 1px solid #1e1e1e;
+        display: flex;
+        flex-direction: column;
+        background: #000000;
+    }
+
+    .panel-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #1e1e1e;
+        font-size: 13px;
+        font-weight: 500;
+        color: #00ff9d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-shadow: 0 0 3px rgba(0, 255, 255, 0.3);
+    }
+
+    .input-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        gap: 16px;
+    }
+
+    textarea {
+        width: 100%;
+        flex: 1;
+        padding: 16px;
+        border: 1px solid #1e1e1e;
+        border-radius: 8px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        resize: none;
+        background: #0a0a0a;
+        color: #e0e0e0;
+        outline: none;
+    }
+
+    textarea:focus {
+        border-color: #00ff9d;
+        box-shadow: 0 0 10px rgba(0, 255, 157, 0.1);
+    }
+
+    .config-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    select, input {
+        padding: 8px 12px;
+        border: 1px solid #1e1e1e;
+        border-radius: 6px;
+        font-size: 13px;
+        background: #0a0a0a;
+        color: #e0e0e0;
+        outline: none;
+    }
+
+    select {
+        width: 120px;
+    }
+
+    select option {
+        background: #0a0a0a;
+    }
+
+    input {
+        flex: 1;
+        font-family: monospace;
+    }
+
+    select:focus, input:focus {
+        border-color: #00ff9d;
+        box-shadow: 0 0 10px rgba(255, 0, 255, 0.1);
+    }
+
+    button {
+        padding: 8px 16px;
+        background: #0a0a0a;
+        border: 1px solid #1e1e1e;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        color: #e0e0e0;
+    }
+
+    button:hover {
+        border-color: #00ffff;
+        color: #00ffff;
+        text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+    }
+
+    #generate-btn {
+        background: #00ff9d;
+        border-color: #00ff9d;
+        color: #000000;
+        font-weight: 500;
+        margin-left: auto;
+    }
+
+    #generate-btn:hover {
+        background: #00cc7d;
+        border-color: #00cc7d;
+        color: #000000;
+        box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* 右侧面板 */
+    .right-panel {
+        width: 60%;
+        display: flex;
+        flex-direction: column;
+        background: #0a0a0a;
+    }
+
+    .preview-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #1e1e1e;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .preview-header span {
+        font-size: 13px;
+        color: #00ff9d; 
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-shadow: 0 0 3px rgba(255, 0, 255, 0.3);
+    }
+
+    .preview-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .preview-actions button {
+        padding: 4px 10px;
+        font-size: 12px;
+    }
+
+    #preview {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #e0e0e0;
+    }
+
+    /* Markdown样式 */
+    #preview h1 {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0 0 16px 0;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #1e1e1e;
+        color: #00ff9d;
+        text-shadow: 0 0 5px rgba(0, 255, 157, 0.3);
+    }
+
+    #preview h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 24px 0 12px 0;
+        color: #00ffff;
+        text-shadow: 0 0 3px rgba(0, 255, 255, 0.3);
+    }
+
+    #preview h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 20px 0 10px 0;
+        color: #00ff9d;
+        text-shadow: 0 0 3px rgba(255, 0, 255, 0.3);
+    }
+
+    #preview p {
+        margin: 0 0 16px 0;
+        color: #e0e0e0;
+    }
+
+    #preview code {
+        background: #1a1a1a;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 13px;
+        color: #00ff9d;
+    }
+
+    #preview pre {
+        background: #1a1a1a;
+        padding: 16px;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 16px 0;
+        border: 1px solid #1e1e1e;
+    }
+
+    #preview pre code {
+        background: none;
+        padding: 0;
+        color: #e0e0e0;
+    }
+
+    #preview table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 16px 0;
+    }
+
+    #preview th, #preview td {
+        border: 1px solid #1e1e1e;
+        padding: 8px 12px;
+        text-align: left;
+    }
+
+    #preview th {
+        background: #1a1a1a;
+        color: #00ffff;
+    }
+
+    #preview td {
+        color: #e0e0e0;
+    }
+
+    #preview blockquote {
+        margin: 16px 0;
+        padding: 0 16px;
+        color: #888;
+        border-left: 4px solid #ff00ff;
+    }
+
+    #preview .katex {
+        color: #e0e0e0;
+    }
+    
+    #preview .katex .mathnormal {
+        color: #ff9d00;
+    }
+
+    .placeholder {
+        color: #444;
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    /* 滚动条 */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #0a0a0a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #1e1e1e;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #00ff9d;
+    }
+</style>
+</head>
+<body>
+    <div class="header">
+        <h1>TeX助手</h1>
+        <span class="badge">Tex助手</span>
+    </div>
+
+    <div class="main">
+        <!-- 左侧输入区 -->
+        <div class="left-panel">
+            <div class="panel-header">输入</div>
+            <div class="input-area">
+                <textarea id="prompt" placeholder="例如：麦克斯韦方程组的微分形式&#10;快速排序流程图&#10;对比PyTorch和TensorFlow的表格"></textarea>
+                
+                <div class="config-row">
+                    <select id="model-select">
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="gpt">GPT</option>
+                    </select>
+                    <input type="password" id="api-key" placeholder="API密钥 (测试可留空)">
+                </div>
+
+                <div class="toolbar">
+                    <button id="template-btn">示例</button>
+                    <button id="clear-btn">🗑️清空</button>
+                    <button id="generate-btn" style="margin-left: auto;">生成</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧预览区 -->
+        <div class="right-panel">
+            <div class="preview-header">
+                <span>预览</span>
+                <div class="preview-actions">
+                    <button id="copy-btn">复制</button>
+                    <button id="export-btn">导出</button>
+                </div>
+            </div>
+            <div id="preview">
+                <div class="placeholder">
+                    输入需求，点击生成
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                'background': '#ffffff',
+                'primaryColor': '#f5f5f5',
+                'primaryTextColor': '#333',
+                'primaryBorderColor': '#eaeaea',
+                'lineColor': '#666',
+                'secondaryColor': '#fafafa',
+                'tertiaryColor': '#f5f5f5'
+            }
+        });
+
+        // 示例模板
+        const examples = [
+            '用LaTeX写出麦克斯韦方程组的微分形式',
+            '用Mermaid画出快速排序的流程图',
+            '生成表格对比PyTorch、TensorFlow、JAX',
+            '用LaTeX写出贝叶斯公式并解释'
+        ];
+
+        let currentExampleIndex = 0;
+
+        // 示例按钮
+        document.getElementById('template-btn').addEventListener('click', () => {
+            document.getElementById('prompt').value = examples[currentExampleIndex];
+            currentExampleIndex = (currentExampleIndex + 1) % examples.length;
+        });
+
+        // 清空按钮
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            document.getElementById('prompt').value = '';
+        });
+
+        // 生成按钮
+        document.getElementById('generate-btn').addEventListener('click', generate);
+
+        // 复制按钮
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            if (window.lastMarkdown) {
+                navigator.clipboard.writeText(window.lastMarkdown);
+                alert('已复制');
+            }
+        });
+
+        // 导出按钮
+        document.getElementById('export-btn').addEventListener('click', () => {
+            if (window.lastMarkdown) {
+                const blob = new Blob([window.lastMarkdown], {type: 'text/plain'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'document.md';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        });
+
+        async function generate() {
+            const prompt = document.getElementById('prompt').value;
+            if (!prompt) return;
+
+            const btn = document.getElementById('generate-btn');
+            btn.textContent = '生成中...';
+            btn.disabled = true;
+
+            try {
+                // 模拟响应（实际使用时替换为真实API）
+                setTimeout(() => {
+                    const response = getMockResponse(prompt);
+                    updatePreview(response);
+                    btn.textContent = '生成';
+                    btn.disabled = false;
+                }, 800);
+            } catch (e) {
+                btn.textContent = '生成';
+                btn.disabled = false;
+            }
+        }
+
+        function getMockResponse(prompt) {
+            if (prompt.includes('麦克斯韦')) {
+                return `# 麦克斯韦方程组
+
+微分形式：
+
+$$
+\\begin{aligned}
+\\nabla \\cdot \\mathbf{E} &= \\frac{\\rho}{\\epsilon_0} \\\\
+\\nabla \\cdot \\mathbf{B} &= 0 \\\\
+\\nabla \\times \\mathbf{E} &= -\\frac{\\partial \\mathbf{B}}{\\partial t} \\\\
+\\nabla \\times \\mathbf{B} &= \\mu_0\\mathbf{J} + \\mu_0\\epsilon_0\\frac{\\partial \\mathbf{E}}{\\partial t}
+\\end{aligned}
+$$
+
+其中：
+- $\\mathbf{E}$：电场强度
+- $\\mathbf{B}$：磁感应强度
+- $\\rho$：电荷密度
+- $\\mathbf{J}$：电流密度`;
+            }
+            
+            if (prompt.includes('排序') || prompt.includes('流程图')) {
+                return `# 快速排序流程
+
+\`\`\`mermaid
+graph TD
+    A[开始] --> B{长度≤1？}
+    B -->|是| C[返回]
+    B -->|否| D[选择基准]
+    D --> E[分区]
+    E --> F[递归左]
+    E --> G[递归右]
+    F --> H[合并]
+    G --> H
+    H --> I[结束]
+\`\`\`
+
+## 算法步骤
+1. 选择基准元素
+2. 将数组分区
+3. 递归排序子数组`;
+            }
+            
+            if (prompt.includes('表格')) {
+                return `# 深度学习框架对比
+
+| 框架 | 特点 | 适用场景 |
+|:-----|:-----|:---------|
+| PyTorch | 动态图，易调试 | 研究 |
+| TensorFlow | 部署完善 | 工业 |
+| JAX | 函数式，高性能 | 科研 |
+
+## 选型建议
+- 研究用 PyTorch
+- 生产用 TensorFlow
+- 前沿研究用 JAX`;
+            }
+            
+            return `# 生成结果
+
+## 数学公式
+$$
+f(x) = \\int_{-\\infty}^{\\infty} \\hat{f}(\\xi) e^{2\\pi i \\xi x} d\\xi
+$$
+
+## 流程图
+\`\`\`mermaid
+graph LR
+    A[输入] --> B[处理]
+    B --> C[输出]
+\`\`\`
+
+## 表格示例
+| 项目 | 值 |
+|:-----|:---|
+| 示例 | 数据 |`;
+        }
+
+        function updatePreview(markdown) {
+            window.lastMarkdown = markdown;
+            const preview = document.getElementById('preview');
+            
+            // 转换为HTML
+            let html = marked.parse(markdown);
+            preview.innerHTML = html;
+            
+            // 渲染公式
+            if (window.renderMathInElement) {
+                renderMathInElement(preview, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+            
+            // 渲染图表
+            mermaid.init(undefined, preview.querySelectorAll('.mermaid'));
+            
+            // 代码高亮
+            preview.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        }
+    </script>
+</body>
+</html>
