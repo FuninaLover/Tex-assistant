@@ -1,46 +1,119 @@
-# Tex-assistant
-解决使用ai输出文本的时候常遇见的格式不易阅读、不方便插入现有文件等问题。
+LaTeX助手
+一个基于AI大模型的智能学术文档编辑器，通过自然语言对话完成LaTeX公式、表格、图表的编辑与生成。
 
-## 功能特点
+项目简介
+LaTeX助手将AI对话能力与专业排版技术结合，让用户无需学习复杂的LaTeX语法，只需用自然语言描述需求，AI就能理解并自动修改文档。支持多轮对话、上下文记忆、多模态文件识别，真正做到“所说即所得”。
 
-- **LaTeX公式**：一键生成复杂数学公式，实时渲染
-- **流程图绘制**：用文字描述，自动生成Mermaid流程图
-- **表格生成**：智能生成规范Markdown表格
-- **自备API**：用户输入自己的API密钥，安全可控
+核心功能
+自然语言驱动编辑
+直接输入指令修改文档，无需记忆LaTeX命令
 
-## 界面预览
+支持连续对话，AI记住上下文
 
-![主页面](screenshots/homepage.png)
+精确定位：“在‘推导过程’后面加解释”、“把散点图改成曲线图”
 
-## 在线体验
+实时渲染预览
+LaTeX公式实时渲染（支持矩阵、微积分、希腊字母等全部数学符号）
 
-(https://你的用户名.github.io/SparkTeX/)
-*需自备DeepSeek或OpenAI API密钥*
+Mermaid图表生成（散点图、折线图、曲线图、柱状图）
 
-## 技术栈
+Markdown表格与代码高亮
 
-- 纯HTML/CSS/JavaScript，无需后端
-- Marked.js - Markdown解析
-- KaTeX - 公式渲染
-- Mermaid.js - 流程图渲染
-- Highlight.js - 代码高亮
-- DeepSeek API - AI生成能力
+A4纸张比例预览，导出PDF/Word格式完全一致
 
-## 本地运行
+多模态文件处理
+支持上传图片、Word、PDF、CSV文件
 
-1. 克隆本项目
-2. 用浏览器打开 `index.html`
-3. 输入你的API密钥开始使用
+图片识别：Claude/GPT-4V自动提取数据生成表格或图表
 
-## 使用提示
+附件暂存机制：先上传文件，后输入指令，AI结合附件智能处理
 
-- DeepSeek API目前免费，可在 [platform.deepseek.com](https://platform.deepseek.com/) 申请
-- 所有API请求在浏览器端完成，不会上传到任何服务器
-- 支持DeepSeek和OpenAI两种模型
+智能快捷命令
+常用LaTeX命令一键插入（分数、积分、求和、矩阵、根号等）
 
-## 作者
+统一格式规范，避免输出混乱
 
+技术架构
+前端
+HTML5 / CSS3 / JavaScript
 
-## 许可证
+Marked：Markdown解析
 
-MIT
+KaTeX：LaTeX公式渲染
+
+Mermaid：图表生成
+
+Prism：代码高亮
+
+html2canvas + jsPDF：PDF导出
+
+AI接口
+Claude（推荐，多模态识别）
+
+OpenAI GPT-4V
+
+DeepSeek
+
+文件解析
+mammoth.js：Word文档解析
+
+pdf.js：PDF文字提取
+
+使用方式
+填写API密钥（支持Claude、OpenAI、DeepSeek）
+
+输入自然语言指令，如：
+
+“写一段克拉伯龙方程推导”
+
+“生成一个散点图，x轴1-5，y轴10,20,15,25,30”
+
+“把散点图改成曲线图”
+
+“把标题改成红色”
+
+可上传图片、Word、PDF、CSV文件作为附件
+
+AI理解指令后自动修改右侧编辑器内容
+
+点击预览按钮查看渲染效果，可导出为PDF或Word
+
+项目结构
+text
+latex-assistant/
+├── index.html          # 主程序文件
+├── README.md           # 项目说明
+└── LICENSE             # MIT许可证
+技术亮点
+真正的AI理解：通过系统提示词让AI自主理解用户意图，无硬编码规则匹配
+
+对话上下文记忆：维护完整对话历史，支持多轮迭代修改
+
+统一格式规范：强制AI输出标准LaTeX格式，避免点乘、矩阵等符号混乱
+
+所见即所得：编辑器源码与预览实时同步，导出格式完全一致
+
+多模态识别：图片上传后自动识别数据，生成表格或图表
+
+依赖库
+库	用途	许可证
+KaTeX	LaTeX公式渲染	MIT
+Marked	Markdown解析	MIT
+Mermaid	图表生成	MIT
+Prism	代码高亮	MIT
+mammoth.js	Word文档解析	BSD-2-Clause
+pdf.js	PDF文字提取	Apache 2.0
+html2canvas	DOM截图	MIT
+jsPDF	PDF生成	MIT
+运行说明
+克隆仓库
+
+用浏览器打开 index.html
+
+填写API密钥开始使用
+
+许可证
+MIT License
+
+联系方式
+如有问题或建议，欢迎提交Issue。
