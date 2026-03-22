@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaTeX助手 · 完整测试版</title>
+    
+    <!-- KaTeX 核心库 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <!-- Markdown 解析 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            color: #333;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 8px;
+        }
+        .formula {
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+            border-left: 3px solid #3498db;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .formula-code {
+            color: #e74c3c;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .preview {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+        .status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .status.ok { background: #2ecc71; color: white; }
+        .status.fail { background: #e74c3c; color: white; }
+        hr { margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <h1>LaTeX 符号渲染完整测试</h1>
+    <p>测试所有常见LaTeX符号在KaTeX中的渲染效果</p>
+    <hr>
+
+    <div id="test-container"></div>
+
+    <script>
+        // 定义所有测试用例
+        const testCases = [
+            {
+                category: "基础运算",
+                items: [
+                    { name: "点乘", latex: "a \\cdot b", display: false },
+                    { name: "叉乘", latex: "a \\times b", display: false },
+                    { name: "除法", latex: "a \\div b", display: false },
+                    { name: "加减乘除", latex: "a + b - c \\times d \\div e", display: false }
+                ]
+            },
+            {
+                category: "分数与根号",
+                items: [
+                    { name: "分数", latex: "\\frac{1}{2}", display: false },
+                    { name: "复杂分数", latex: "\\frac{a+b}{c-d}", display: false },
+                    { name: "平方根", latex: "\\sqrt{x}", display: false },
+                    { name: "n次根号", latex: "\\sqrt[n]{x}", display: false },
+                    { name: "三次根号", latex: "\\sqrt[3]{x}", display: false },
+                    { name: "根号内分数", latex: "\\sqrt{\\frac{a}{b}}", display: false }
+                ]
+            },
+            {
+                category: "∫ 积分与求和",
+                items: [
+                    { name: "定积分", latex: "\\int_0^1 x^2 dx", display: false },
+                    { name: "不定积分", latex: "\\int f(x) dx", display: false },
+                    { name: "二重积分", latex: "\\iint_D f(x,y) dA", display: false },
+                    { name: "三重积分", latex: "\\iiint_V f dV", display: false },
+                    { name: "求和", latex: "\\sum_{i=1}^n i", display: false },
+                    { name: "求和(行内)", latex: "\\sum_{i=1}^n i^2", display: false },
+                    { name: "乘积", latex: "\\prod_{i=1}^n x_i", display: false },
+                    { name: "极限", latex: "\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1", display: false }
+                ]
+            },
+            {
+                category: "🇬🇷 希腊字母",
+                items: [
+                    { name: "小写希腊字母", latex: "\\alpha, \\beta, \\gamma, \\delta, \\epsilon, \\zeta, \\eta, \\theta, \\iota, \\kappa, \\lambda, \\mu, \\nu, \\xi, \\pi, \\rho, \\sigma, \\tau, \\upsilon, \\phi, \\chi, \\psi, \\omega", display: false },
+                    { name: "大写希腊字母", latex: "\\Gamma, \\Delta, \\Theta, \\Lambda, \\Xi, \\Pi, \\Sigma, \\Upsilon, \\Phi, \\Psi, \\Omega", display: false }
+                ]
+            },
+            {
+                category: "矩阵",
+                items: [
+                    { name: "2x2矩阵", latex: "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}", display: true },
+                    { name: "3x3矩阵", latex: "\\begin{pmatrix} 1 & 2 & 3 \\\\ 4 & 5 & 6 \\\\ 7 & 8 & 9 \\end{pmatrix}", display: true },
+                    { name: "带括号矩阵", latex: "\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}", display: true },
+                    { name: "行列式", latex: "\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix} = ad - bc", display: true }
+                ]
+            },
+            {
+                category: "上下标",
+                items: [
+                    { name: "上标", latex: "x^2", display: false },
+                    { name: "下标", latex: "x_i", display: false },
+                    { name: "组合", latex: "x_i^2", display: false },
+                    { name: "多重上标", latex: "e^{i\\pi} + 1 = 0", display: false },
+                    { name: "上下标组合", latex: "\\sum_{i=1}^{n} a_i", display: false }
+                ]
+            },
+            {
+                category: "括号与分隔符",
+                items: [
+                    { name: "圆括号", latex: "(a+b)", display: false },
+                    { name: "方括号", latex: "[a+b]", display: false },
+                    { name: "花括号", latex: "\\{a+b\\}", display: false },
+                    { name: "自适应括号", latex: "\\left( \\frac{a}{b} \\right)", display: false },
+                    { name: "绝对值", latex: "|x|", display: false },
+                    { name: "范数", latex: "\\|x\\|", display: false }
+                ]
+            },
+            {
+                category: "三角函数",
+                items: [
+                    { name: "正弦", latex: "\\sin x", display: false },
+                    { name: "余弦", latex: "\\cos x", display: false },
+                    { name: "正切", latex: "\\tan x", display: false },
+                    { name: "反三角函数", latex: "\\arcsin x, \\arccos x, \\arctan x", display: false },
+                    { name: "双曲函数", latex: "\\sinh x, \\cosh x, \\tanh x", display: false }
+                ]
+            },
+            {
+                category: "关系与逻辑",
+                items: [
+                    { name: "等于", latex: "a = b", display: false },
+                    { name: "约等于", latex: "a \\approx b", display: false },
+                    { name: "不等于", latex: "a \\neq b", display: false },
+                    { name: "小于等于", latex: "a \\leq b", display: false },
+                    { name: "大于等于", latex: "a \\geq b", display: false },
+                    { name: "正比于", latex: "a \\propto b", display: false },
+                    { name: "无穷", latex: "\\infty", display: false },
+                    { name: "属于", latex: "x \\in \\mathbb{R}", display: false }
+                ]
+            },
+            {
+                category: "方程组",
+                items: [
+                    { name: "方程组", latex: "\\begin{cases} x + y = 5 \\\\ 2x - y = 1 \\end{cases}", display: true },
+                    { name: "分段函数", latex: "f(x) = \\begin{cases} x^2, & x \\geq 0 \\\\ -x^2, & x < 0 \\end{cases}", display: true }
+                ]
+            },
+            {
+                category: "复杂公式示例",
+                items: [
+                    { name: "欧拉公式", latex: "e^{i\\pi} + 1 = 0", display: false },
+                    { name: "傅里叶变换", latex: "\\hat{f}(\\xi) = \\int_{-\\infty}^{\\infty} f(x) e^{-2\\pi i x \\xi} dx", display: true },
+                    { name: "高斯积分", latex: "\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}", display: true },
+                    { name: "泰勒展开", latex: "e^x = \\sum_{n=0}^{\\infty} \\frac{x^n}{n!}", display: true },
+                    { name: "二次公式", latex: "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}", display: true }
+                ]
+            }
+        ];
+
+        function renderTest() {
+            const container = document.getElementById('test-container');
+            let html = '';
+            
+            for (const category of testCases) {
+                html += `<div class="test-section">`;
+                html += `<h2>${category.category}</h2>`;
+                
+                for (const item of category.items) {
+                    const displayStyle = item.display ? '$$' : '$';
+                    const fullLatex = `${displayStyle}${item.latex}${displayStyle}`;
+                    
+                    // 临时渲染测试
+                    let renderSuccess = true;
+                    let testHtml = '';
+                    try {
+                        // 尝试渲染
+                        const testDiv = document.createElement('div');
+                        testDiv.innerHTML = marked.parse(fullLatex);
+                        if (window.renderMathInElement) {
+                            window.renderMathInElement(testDiv, {
+                                delimiters: [
+                                    {left: '$$', right: '$$', display: true},
+                                    {left: '$', right: '$', display: false}
+                                ],
+                                throwOnError: false
+                            });
+                        }
+                        testHtml = testDiv.innerHTML;
+                        if (testHtml.includes('KaTeX') === false && testDiv.innerText.includes(item.latex)) {
+                            // 可能渲染失败
+                        }
+                    } catch(e) {
+                        renderSuccess = false;
+                    }
+                    
+                    html += `<div class="formula">`;
+                    html += `<strong>${item.name}</strong> <code class="formula-code">${item.latex}</code>`;
+                    html += `<span class="status ${renderSuccess ? 'ok' : 'fail'}">${renderSuccess ? '✓ 正常' : '✗ 异常'}</span>`;
+                    html += `<div class="preview">`;
+                    html += `<div id="preview-${category.category.replace(/[^a-z]/g, '')}-${item.name.replace(/[^a-z]/g, '')}" class="preview-content">${fullLatex}</div>`;
+                    html += `</div>`;
+                    html += `</div>`;
+                }
+                
+                html += `</div>`;
+            }
+            
+            container.innerHTML = html;
+            
+            // 渲染所有公式
+            const previewDivs = document.querySelectorAll('.preview-content');
+            previewDivs.forEach(div => {
+                const content = div.innerHTML;
+                div.innerHTML = marked.parse(content);
+                if (window.renderMathInElement) {
+                    window.renderMathInElement(div, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ],
+                        throwOnError: false,
+                        output: 'htmlAndMathml'
+                    });
+                }
+            });
+        }
+        
+        // 初始化渲染
+        renderTest();
+    </script>
+</body>
+</html>

@@ -3,580 +3,660 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tex助手</title>
+    <title>LaTeX助手</title>
     
     <!-- 核心库 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    
+    <!-- 文件解析库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     
     <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: #0a0a0a;
-        color: #e0e0e0;
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* 头部 */
-    .header {
-        padding: 16px 24px;
-        border-bottom: 1px solid #1e1e1e;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        background: #000000;
-    }
-
-    .header h1 {
-        font-size: 20px;
-        font-weight: 500;
-        color: #00ff9d;  /* 荧光绿 */
-        text-shadow: 0 0 5px rgba(0, 255, 157, 0.3);
-    }
-
-    .header .badge {
-        font-size: 12px;
-        color: #00ff9d; 
-        background: #1a1a1a;
-        padding: 4px 8px;
-        border-radius: 4px;
-        border: 1px solid #00ff9d;
-        text-shadow: 0 0 3px rgba(255, 0, 255, 0.3);
-    }
-
-    /* 主容器 */
-    .main {
-        flex: 1;
-        display: flex;
-        min-height: 0;
-    }
-
-    /* 左侧面板 */
-    .left-panel {
-        width: 40%;
-        border-right: 1px solid #1e1e1e;
-        display: flex;
-        flex-direction: column;
-        background: #000000;
-    }
-
-    .panel-header {
-        padding: 16px 20px;
-        border-bottom: 1px solid #1e1e1e;
-        font-size: 13px;
-        font-weight: 500;
-        color: #00ff9d;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        text-shadow: 0 0 3px rgba(0, 255, 255, 0.3);
-    }
-
-    .input-area {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        padding: 20px;
-        gap: 16px;
-    }
-
-    textarea {
-        width: 100%;
-        flex: 1;
-        padding: 16px;
-        border: 1px solid #1e1e1e;
-        border-radius: 8px;
-        font-family: 'Monaco', 'Menlo', monospace;
-        font-size: 14px;
-        line-height: 1.6;
-        resize: none;
-        background: #0a0a0a;
-        color: #e0e0e0;
-        outline: none;
-    }
-
-    textarea:focus {
-        border-color: #00ff9d;
-        box-shadow: 0 0 10px rgba(0, 255, 157, 0.1);
-    }
-
-    .config-row {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-    }
-
-    select, input {
-        padding: 8px 12px;
-        border: 1px solid #1e1e1e;
-        border-radius: 6px;
-        font-size: 13px;
-        background: #0a0a0a;
-        color: #e0e0e0;
-        outline: none;
-    }
-
-    select {
-        width: 120px;
-    }
-
-    select option {
-        background: #0a0a0a;
-    }
-
-    input {
-        flex: 1;
-        font-family: monospace;
-    }
-
-    select:focus, input:focus {
-        border-color: #00ff9d;
-        box-shadow: 0 0 10px rgba(255, 0, 255, 0.1);
-    }
-
-    button {
-        padding: 8px 16px;
-        background: #0a0a0a;
-        border: 1px solid #1e1e1e;
-        border-radius: 6px;
-        font-size: 13px;
-        cursor: pointer;
-        color: #e0e0e0;
-    }
-
-    button:hover {
-        border-color: #00ffff;
-        color: #00ffff;
-        text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
-    }
-
-    #generate-btn {
-        background: #00ff9d;
-        border-color: #00ff9d;
-        color: #000000;
-        font-weight: 500;
-        margin-left: auto;
-    }
-
-    #generate-btn:hover {
-        background: #00cc7d;
-        border-color: #00cc7d;
-        color: #000000;
-        box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
-    }
-
-    .toolbar {
-        display: flex;
-        gap: 8px;
-    }
-
-    /* 右侧面板 */
-    .right-panel {
-        width: 60%;
-        display: flex;
-        flex-direction: column;
-        background: #0a0a0a;
-    }
-
-    .preview-header {
-        padding: 16px 20px;
-        border-bottom: 1px solid #1e1e1e;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .preview-header span {
-        font-size: 13px;
-        color: #00ff9d; 
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        text-shadow: 0 0 3px rgba(255, 0, 255, 0.3);
-    }
-
-    .preview-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .preview-actions button {
-        padding: 4px 10px;
-        font-size: 12px;
-    }
-
-    #preview {
-        flex: 1;
-        padding: 20px;
-        overflow-y: auto;
-        font-size: 14px;
-        line-height: 1.6;
-        color: #e0e0e0;
-    }
-
-    /* Markdown样式 */
-    #preview h1 {
-        font-size: 24px;
-        font-weight: 600;
-        margin: 0 0 16px 0;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #1e1e1e;
-        color: #00ff9d;
-        text-shadow: 0 0 5px rgba(0, 255, 157, 0.3);
-    }
-
-    #preview h2 {
-        font-size: 20px;
-        font-weight: 600;
-        margin: 24px 0 12px 0;
-        color: #00ffff;
-        text-shadow: 0 0 3px rgba(0, 255, 255, 0.3);
-    }
-
-    #preview h3 {
-        font-size: 16px;
-        font-weight: 600;
-        margin: 20px 0 10px 0;
-        color: #00ff9d;
-        text-shadow: 0 0 3px rgba(255, 0, 255, 0.3);
-    }
-
-    #preview p {
-        margin: 0 0 16px 0;
-        color: #e0e0e0;
-    }
-
-    #preview code {
-        background: #1a1a1a;
-        padding: 2px 5px;
-        border-radius: 3px;
-        font-family: 'Monaco', 'Menlo', monospace;
-        font-size: 13px;
-        color: #00ff9d;
-    }
-
-    #preview pre {
-        background: #1a1a1a;
-        padding: 16px;
-        border-radius: 8px;
-        overflow-x: auto;
-        margin: 16px 0;
-        border: 1px solid #1e1e1e;
-    }
-
-    #preview pre code {
-        background: none;
-        padding: 0;
-        color: #e0e0e0;
-    }
-
-    #preview table {
-        border-collapse: collapse;
-        width: 100%;
-        margin: 16px 0;
-    }
-
-    #preview th, #preview td {
-        border: 1px solid #1e1e1e;
-        padding: 8px 12px;
-        text-align: left;
-    }
-
-    #preview th {
-        background: #1a1a1a;
-        color: #00ffff;
-    }
-
-    #preview td {
-        color: #e0e0e0;
-    }
-
-    #preview blockquote {
-        margin: 16px 0;
-        padding: 0 16px;
-        color: #888;
-        border-left: 4px solid #ff00ff;
-    }
-
-    #preview .katex {
-        color: #e0e0e0;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    .header { padding: 12px 20px; border-bottom: 1px solid #1e1e1e; display: flex; align-items: center; gap: 16px; background: #000000; flex-shrink: 0; }
+    .header h1 { font-size: 18px; font-weight: 500; color: #00ff9d; }
+    .badge { font-size: 11px; color: #888; background: #1a1a1a; padding: 2px 8px; border-radius: 4px; border: 1px solid #2a2a2a; }
+    .main { flex: 1; display: flex; min-height: 0; overflow: hidden; }
+    .left-panel { width: 30%; border-right: 1px solid #1e1e1e; display: flex; flex-direction: column; background: #000000; height: 100%; overflow: hidden; }
+    .conversation-header { padding: 10px 16px; border-bottom: 1px solid #1e1e1e; display: flex; justify-content: space-between; align-items: center; background: #0a0a0a; flex-shrink: 0; }
+    .conversation-title { display: flex; align-items: center; gap: 8px; color: #00ff9d; font-weight: 500; font-size: 14px; }
+    .messages-container { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; background: #0a0a0a; }
+    .message { display: flex; gap: 10px; max-width: 100%; }
+    .message-avatar { width: 28px; height: 28px; background: #1a1a1a; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 1px solid #1e1e1e; flex-shrink: 0; }
+    .message-content { flex: 1; background: #1a1a1a; border-radius: 6px; padding: 8px 10px; border: 1px solid #1e1e1e; }
+    .message.user-message .message-content { background: #0a0a0a; border-color: #00ff9d; }
+    .message-sender { font-size: 11px; color: #888; margin-bottom: 4px; }
+    .message-text { color: #e0e0e0; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+    .input-container { border-top: 1px solid #1e1e1e; padding: 12px; background: #000000; flex-shrink: 0; }
+    .file-attachments { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; min-height: 28px; }
+    .file-attachment { background: #1a1a1a; border: 1px solid #1e1e1e; border-radius: 4px; padding: 2px 8px; display: flex; align-items: center; gap: 6px; font-size: 11px; }
+    .file-attachment .file-name { color: #00ffff; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-attachment .file-remove { color: #888; cursor: pointer; padding: 0 2px; }
+    .file-attachment .file-remove:hover { color: #ff5555; }
+    .input-toolbar { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .toolbar-btn { background: transparent; border: 1px solid #1e1e1e; color: #e0e0e0; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .toolbar-btn:hover { border-color: #00ffff; color: #00ffff; }
+    .input-wrapper { display: flex; gap: 8px; margin-bottom: 8px; }
+    .input-wrapper textarea { flex: 1; background: #1a1a1a; border: 1px solid #1e1e1e; border-radius: 6px; padding: 8px 10px; color: #e0e0e0; font-family: inherit; font-size: 13px; resize: none; min-height: 36px; max-height: 100px; outline: none; }
+    .input-wrapper textarea:focus { border-color: #00ff9d; }
+    .send-btn { width: 36px; height: 36px; background: #00ff9d; border: none; border-radius: 6px; color: #000; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .send-btn:hover { background: #00cc7d; }
+    .model-bar { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .model-select { background: #1a1a1a; border: 1px solid #1e1e1e; border-radius: 4px; padding: 6px 10px; color: #e0e0e0; font-size: 12px; outline: none; flex: 1; min-width: 100px; }
+    .api-key-input { background: #1a1a1a; border: 1px solid #1e1e1e; border-radius: 4px; padding: 6px 10px; color: #e0e0e0; font-size: 12px; outline: none; flex: 2; }
+    .right-panel { width: 70%; display: flex; flex-direction: column; background: #000000; height: 100%; overflow: hidden; position: relative; }
     
-    #preview .katex .mathnormal {
-        color: #ff9d00;
-    }
-
-    .placeholder {
-        color: #444;
-        text-align: center;
-        padding: 60px 20px;
-    }
-
-    /* 滚动条 */
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: #0a0a0a;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: #1e1e1e;
-        border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: #00ff9d;
-    }
-</style>
+    .editor-toolbar-left { position: absolute; left: 0; top: 0; z-index: 50; background: #0a0a0a; border-right: 1px solid #2a2a2a; border-bottom: 1px solid #2a2a2a; border-radius: 0 0 8px 0; padding: 6px 12px; display: flex; flex-direction: column; gap: 6px; min-width: 70px; }
+    .editor-toolbar-left button { background: #1a1a1a; border: 1px solid #2a2a2a; color: #e0e0e0; padding: 6px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; width: 100%; text-align: center; }
+    .editor-toolbar-left button:hover { border-color: #00ff9d; color: #00ff9d; }
+    
+    .editor-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; margin-left: 80px; }
+    .source-editor { flex: 1; width: 100%; padding: 16px; background: #0a0a0a; color: #00ff9d; font-family: 'Monaco', 'Menlo', monospace; font-size: 13px; line-height: 1.5; border: none; resize: none; outline: none; white-space: pre-wrap; overflow: auto; }
+    
+    .toolbar-container { position: relative; flex-shrink: 0; margin-left: 80px; }
+    .toolbar-toggle { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: #0a0a0a; border-bottom: 1px solid #1e1e1e; cursor: pointer; user-select: none; }
+    .toolbar-toggle:hover { background: #1a1a1a; }
+    .toolbar-toggle-icon { color: #00ff9d; font-size: 12px; }
+    .toolbar-toggle-text { font-size: 12px; color: #e0e0e0; }
+    .toolbar-panel { display: none; padding: 8px 12px; background: #0a0a0a; border-bottom: 1px solid #1e1e1e; flex-wrap: wrap; gap: 6px; margin-left: 80px; }
+    .toolbar-panel.show { display: flex; }
+    .toolbar-btn-sm { background: #1a1a1a; border: 1px solid #2a2a2a; color: #e0e0e0; padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: monospace; }
+    .toolbar-btn-sm:hover { border-color: #00ff9d; color: #00ff9d; background: #2a2a2a; }
+    .toolbar-sep { width: 1px; background: #2a2a2a; margin: 0 4px; }
+    
+    .float-preview { position: absolute; top: 0; right: 0; width: 65%; height: 100%; background: #ffffff; box-shadow: -4px 0 20px rgba(0,0,0,0.3); transform: translateX(100%); transition: transform 0.3s ease; display: flex; flex-direction: column; z-index: 100; border-left: 1px solid #ddd; pointer-events: none; }
+    .float-preview.open { transform: translateX(0); pointer-events: auto; }
+    .float-preview-header { padding: 8px 12px; background: #f5f5f5; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .float-preview-header span { font-size: 12px; font-weight: 500; color: #333; }
+    .float-preview-actions { display: flex; gap: 8px; }
+    .preview-action-btn { background: #e0e0e0; border: 1px solid #ccc; color: #333; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+    .preview-action-btn:hover { background: #d0d0d0; }
+    .float-preview-content { flex: 1; overflow-y: auto; background: #ffffff; display: flex; justify-content: center; padding: 20px; }
+    .a4-preview { max-width: 210mm; width: 100%; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); min-height: 297mm; padding: 20mm; margin: 0 auto; }
+    .preview-content { color: #333333; font-size: 14px; line-height: 1.8; font-family: 'Georgia', 'Times New Roman', serif; }
+    .preview-content h1 { color: #2c3e50; font-size: 24px; margin: 0 0 20px 0; padding-bottom: 8px; border-bottom: 2px solid #3498db; }
+    .preview-content h2 { color: #34495e; font-size: 20px; margin: 30px 0 15px 0; }
+    .preview-content h3 { color: #7f8c8d; font-size: 18px; margin: 25px 0 12px 0; }
+    .preview-content p { margin: 0 0 16px 0; color: #333333; }
+    .preview-content pre { background: #f5f5f5 !important; border-left: 3px solid #3498db; padding: 16px !important; overflow-x: auto; margin: 20px 0; border-radius: 0 4px 4px 0; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; }
+    .preview-content code { font-family: 'Monaco', 'Menlo', monospace; background: #f0f0f0; padding: 2px 5px; border-radius: 3px; color: #e74c3c; font-size: 12px; }
+    .preview-content pre code { background: none; padding: 0; color: inherit; }
+    .preview-content table { border-collapse: collapse; width: 100%; margin: 25px 0; border: 1px solid #ddd; font-size: 14px; }
+    .preview-content th { background: #3498db; color: white; border: 1px solid #2980b9; padding: 10px 12px; font-weight: 500; font-size: 14px; text-align: center; }
+    .preview-content td { border: 1px solid #ddd; padding: 8px 12px; color: #333; font-size: 14px; text-align: center; font-family: monospace; }
+    .preview-content tr:nth-child(even) { background: #f9f9f9; }
+    .preview-content .katex { color: #333333; font-size: 1.1em; }
+    .preview-content .katex-display { margin: 25px 0; padding: 15px; background: #f8f9fa; border-radius: 4px; overflow-x: auto; border: 1px solid #e0e0e0; }
+    .preview-content .katex-display .katex { overflow-x: auto; overflow-y: hidden; }
+    .preview-content .mermaid { background: #ffffff; padding: 20px; margin: 20px 0; border-radius: 4px; border: 1px solid #e0e0e0; text-align: center; }
+    .preview-tab { position: absolute; right: 0; top: 50%; transform: translateY(-50%); background: #00ff9d; color: #000; padding: 12px 6px; border-radius: 8px 0 0 8px; cursor: pointer; writing-mode: vertical-rl; text-orientation: mixed; font-size: 12px; font-weight: bold; z-index: 101; transition: all 0.2s; box-shadow: -2px 0 8px rgba(0,0,0,0.3); }
+    .preview-tab:hover { background: #00cc7d; padding-right: 10px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00ff9d; }
+    .upload-status { margin-top: 6px; padding: 2px 8px; background: #1a1a1a; border-radius: 4px; font-size: 11px; color: #00ff9d; display: none; }
+    .upload-status.show { display: block; }
+    </style>
 </head>
 <body>
     <div class="header">
-        <h1>TeX助手</h1>
-        <span class="badge">Tex助手</span>
+        <h1>LaTeX助手</h1>
+        <span class="badge">v2.2</span>
     </div>
 
     <div class="main">
-        <!-- 左侧输入区 -->
         <div class="left-panel">
-            <div class="panel-header">输入</div>
-            <div class="input-area">
-                <textarea id="prompt" placeholder="例如：麦克斯韦方程组的微分形式&#10;快速排序流程图&#10;对比PyTorch和TensorFlow的表格"></textarea>
-                
-                <div class="config-row">
-                    <select id="model-select">
-                        <option value="deepseek">DeepSeek</option>
-                        <option value="gpt">GPT</option>
-                    </select>
-                    <input type="password" id="api-key" placeholder="API密钥 (测试可留空)">
-                </div>
+            <div class="conversation-header">
+                <div class="conversation-title"><span>对话</span></div>
+            </div>
 
-                <div class="toolbar">
-                    <button id="template-btn">示例</button>
-                    <button id="clear-btn">🗑️清空</button>
-                    <button id="generate-btn" style="margin-left: auto;">生成</button>
+            <div class="messages-container" id="messages-container">
+                <div class="message welcome-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="message-sender">LaTeX助手</div>
+                        <div class="message-text">
+                            <p><strong>智能文档编辑助手</strong></p>
+                            <p>理解自然语言指令<br>
+                            支持LaTeX公式、表格、图表<br>
+                            可上传图片、Word、PDF、CSV<br>
+                            自动识别图片数据生成图表</p>
+                            <p style="margin-top: 8px;">试试：<br>
+                            "写一段克拉伯龙方程推导"<br>
+                            "生成一个散点图，数据：x=1~5，y=10,20,15,25,30"<br>
+                            "把散点图改成曲线图"<br>
+                            "上传图片，根据数据制作表格"</p>
+                            <p style="margin-top: 8px;">常用符号：点乘 $a \cdot b$，叉乘 $a \times b$，分数 $\frac{1}{2}$，根号 $\sqrt{x}$</p>
+                            <p style="margin-top: 8px;">点击右侧边缘按钮打开/关闭预览</p>
+                            <p style="margin-top: 8px;">请填写API密钥开始使用（推荐Claude）</p>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <div class="input-container">
+                <div class="file-attachments" id="file-attachments"></div>
+                <div class="input-toolbar">
+                    <button id="attach-file-btn" class="toolbar-btn">📎 上传附件</button>
+                    <button id="template-btn" class="toolbar-btn">示例</button>
+                    <button id="clear-chat-btn" class="toolbar-btn">清空对话</button>
+                    <input type="file" id="file-input" multiple hidden accept=".txt,.md,.tex,.pdf,.jpg,.png,.jpeg,.gif,.bmp,.webp,.docx,.csv">
+                </div>
+                <div class="input-wrapper">
+                    <textarea id="prompt" placeholder="输入自然语言指令..." rows="1"></textarea>
+                    <button id="send-btn" class="send-btn">发送</button>
+                </div>
+                <div class="model-bar">
+                    <select id="model-select" class="model-select">
+                        <option value="claude">Claude (推荐)</option>
+                        <option value="openai">OpenAI (GPT-4V)</option>
+                        <option value="deepseek">DeepSeek</option>
+                    </select>
+                    <input type="password" id="api-key" class="api-key-input" placeholder="API密钥">
+                </div>
+                <div class="upload-status" id="upload-status"></div>
             </div>
         </div>
 
-        <!-- 右侧预览区 -->
         <div class="right-panel">
-            <div class="preview-header">
-                <span>预览</span>
-                <div class="preview-actions">
-                    <button id="copy-btn">复制</button>
-                    <button id="export-btn">导出</button>
+            <div class="editor-toolbar-left">
+                <button id="refresh-preview-btn" title="刷新预览">刷新</button>
+                <button id="copy-tex-btn" title="复制内容">复制</button>
+                <button id="clear-editor-btn" title="清空编辑器">清空</button>
+            </div>
+            
+            <div class="toolbar-container">
+                <div class="toolbar-toggle" id="toolbar-toggle">
+                    <span class="toolbar-toggle-icon">▶</span>
+                    <span class="toolbar-toggle-text">LaTeX 快捷命令 (点击展开)</span>
+                </div>
+                <div class="toolbar-panel" id="toolbar-panel">
+                    <button class="toolbar-btn-sm" id="insert-frac">\frac{}{}</button>
+                    <button class="toolbar-btn-sm" id="insert-sum">\sum</button>
+                    <button class="toolbar-btn-sm" id="insert-int">\int</button>
+                    <span class="toolbar-sep"></span>
+                    <button class="toolbar-btn-sm" id="insert-alpha">α</button>
+                    <button class="toolbar-btn-sm" id="insert-beta">β</button>
+                    <button class="toolbar-btn-sm" id="insert-gamma">γ</button>
+                    <span class="toolbar-sep"></span>
+                    <button class="toolbar-btn-sm" id="insert-cdot">\cdot</button>
+                    <button class="toolbar-btn-sm" id="insert-times">\times</button>
+                    <span class="toolbar-sep"></span>
+                    <button class="toolbar-btn-sm" id="insert-matrix">\begin{pmatrix}</button>
+                    <button class="toolbar-btn-sm" id="insert-sqrt">\sqrt</button>
                 </div>
             </div>
-            <div id="preview">
-                <div class="placeholder">
-                    输入需求，点击生成
+            
+            <div class="editor-container">
+                <textarea id="latex-editor" class="source-editor">## 克拉伯龙方程推导
+
+### 实验定律
+- **波意耳定律**：$pV = \text{常数}$ (T恒定)
+- **查理定律**：$p/T = \text{常数}$ (V恒定)
+- **盖-吕萨克定律**：$V/T = \text{常数}$ (p恒定)
+
+### 推导过程
+设一定量气体的状态变化过程分为两步：
+
+1. **等温过程**：$p_1 V_1 = p' V_2$
+2. **等容过程**：$\frac{p'}{T_1} = \frac{p_2}{T_2}$
+
+消去 $p'$：
+$$\frac{p_1 V_1}{T_1} = \frac{p_2 V_2}{T_2}$$
+
+### 最终形式
+$$pV = nRT$$
+
+其中 $R = 8.314 \, \text{J/(mol} \cdot \text{K)}$ 为气体常数。
+
+### 符号测试
+- 点乘：$a \cdot b$
+- 叉乘：$a \times b$
+- 分数：$\frac{1}{2}$
+- 根号：$\sqrt{x}$
+- 积分：$\int_0^1 x^2 dx$
+- 求和：$\sum_{i=1}^n i$</textarea>
+            </div>
+            
+            <div class="float-preview" id="float-preview">
+                <div class="float-preview-header">
+                    <span>预览</span>
+                    <div class="float-preview-actions">
+                        <button class="preview-action-btn" id="export-pdf-btn">PDF导出</button>
+                        <button class="preview-action-btn" id="export-word-btn">word文档导出</button>
+                    </div>
                 </div>
+                <div class="float-preview-content">
+                    <div class="a4-preview">
+                        <div id="preview" class="preview-content"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preview-tab" id="preview-tab">
+                预览
             </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <script>
-        // 初始化
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: 'base',
-            themeVariables: {
-                'background': '#ffffff',
-                'primaryColor': '#f5f5f5',
-                'primaryTextColor': '#333',
-                'primaryBorderColor': '#eaeaea',
-                'lineColor': '#666',
-                'secondaryColor': '#fafafa',
-                'tertiaryColor': '#f5f5f5'
-            }
-        });
-
-        // 示例模板
-        const examples = [
-            '用LaTeX写出麦克斯韦方程组的微分形式',
-            '用Mermaid画出快速排序的流程图',
-            '生成表格对比PyTorch、TensorFlow、JAX',
-            '用LaTeX写出贝叶斯公式并解释'
-        ];
-
-        let currentExampleIndex = 0;
-
-        // 示例按钮
-        document.getElementById('template-btn').addEventListener('click', () => {
-            document.getElementById('prompt').value = examples[currentExampleIndex];
-            currentExampleIndex = (currentExampleIndex + 1) % examples.length;
-        });
-
-        // 清空按钮
-        document.getElementById('clear-btn').addEventListener('click', () => {
-            document.getElementById('prompt').value = '';
-        });
-
-        // 生成按钮
-        document.getElementById('generate-btn').addEventListener('click', generate);
-
-        // 复制按钮
-        document.getElementById('copy-btn').addEventListener('click', () => {
-            if (window.lastMarkdown) {
-                navigator.clipboard.writeText(window.lastMarkdown);
-                alert('已复制');
-            }
-        });
-
-        // 导出按钮
-        document.getElementById('export-btn').addEventListener('click', () => {
-            if (window.lastMarkdown) {
-                const blob = new Blob([window.lastMarkdown], {type: 'text/plain'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'document.md';
-                a.click();
-                URL.revokeObjectURL(url);
-            }
-        });
-
-        async function generate() {
-            const prompt = document.getElementById('prompt').value;
-            if (!prompt) return;
-
-            const btn = document.getElementById('generate-btn');
-            btn.textContent = '生成中...';
-            btn.disabled = true;
-
-            try {
-                // 模拟响应（实际使用时替换为真实API）
-                setTimeout(() => {
-                    const response = getMockResponse(prompt);
-                    updatePreview(response);
-                    btn.textContent = '生成';
-                    btn.disabled = false;
-                }, 800);
-            } catch (e) {
-                btn.textContent = '生成';
-                btn.disabled = false;
+    (function() {
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+        
+        let pendingAttachments = [];
+        let conversationHistory = [];
+        
+        // DOM元素
+        const floatPreview = document.getElementById('float-preview');
+        const previewTab = document.getElementById('preview-tab');
+        const latexEditor = document.getElementById('latex-editor');
+        const preview = document.getElementById('preview');
+        const messagesContainer = document.getElementById('messages-container');
+        const promptInput = document.getElementById('prompt');
+        const sendBtn = document.getElementById('send-btn');
+        const attachBtn = document.getElementById('attach-file-btn');
+        const fileInput = document.getElementById('file-input');
+        const fileAttachments = document.getElementById('file-attachments');
+        const templateBtn = document.getElementById('template-btn');
+        const clearChatBtn = document.getElementById('clear-chat-btn');
+        const modelSelect = document.getElementById('model-select');
+        const apiKeyInput = document.getElementById('api-key');
+        const refreshPreviewBtn = document.getElementById('refresh-preview-btn');
+        
+        // 预览开关
+        let previewOpen = false;
+        function togglePreview() {
+            previewOpen = !previewOpen;
+            if (previewOpen) {
+                floatPreview.classList.add('open');
+                previewTab.style.background = '#00cc7d';
+            } else {
+                floatPreview.classList.remove('open');
+                previewTab.style.background = '#00ff9d';
             }
         }
-
-        function getMockResponse(prompt) {
-            if (prompt.includes('麦克斯韦')) {
-                return `# 麦克斯韦方程组
-
-微分形式：
-
-$$
-\\begin{aligned}
-\\nabla \\cdot \\mathbf{E} &= \\frac{\\rho}{\\epsilon_0} \\\\
-\\nabla \\cdot \\mathbf{B} &= 0 \\\\
-\\nabla \\times \\mathbf{E} &= -\\frac{\\partial \\mathbf{B}}{\\partial t} \\\\
-\\nabla \\times \\mathbf{B} &= \\mu_0\\mathbf{J} + \\mu_0\\epsilon_0\\frac{\\partial \\mathbf{E}}{\\partial t}
-\\end{aligned}
-$$
-
-其中：
-- $\\mathbf{E}$：电场强度
-- $\\mathbf{B}$：磁感应强度
-- $\\rho$：电荷密度
-- $\\mathbf{J}$：电流密度`;
-            }
-            
-            if (prompt.includes('排序') || prompt.includes('流程图')) {
-                return `# 快速排序流程
-
-\`\`\`mermaid
-graph TD
-    A[开始] --> B{长度≤1？}
-    B -->|是| C[返回]
-    B -->|否| D[选择基准]
-    D --> E[分区]
-    E --> F[递归左]
-    E --> G[递归右]
-    F --> H[合并]
-    G --> H
-    H --> I[结束]
-\`\`\`
-
-## 算法步骤
-1. 选择基准元素
-2. 将数组分区
-3. 递归排序子数组`;
-            }
-            
-            if (prompt.includes('表格')) {
-                return `# 深度学习框架对比
-
-| 框架 | 特点 | 适用场景 |
-|:-----|:-----|:---------|
-| PyTorch | 动态图，易调试 | 研究 |
-| TensorFlow | 部署完善 | 工业 |
-| JAX | 函数式，高性能 | 科研 |
-
-## 选型建议
-- 研究用 PyTorch
-- 生产用 TensorFlow
-- 前沿研究用 JAX`;
-            }
-            
-            return `# 生成结果
-
-## 数学公式
-$$
-f(x) = \\int_{-\\infty}^{\\infty} \\hat{f}(\\xi) e^{2\\pi i \\xi x} d\\xi
-$$
-
-## 流程图
-\`\`\`mermaid
-graph LR
-    A[输入] --> B[处理]
-    B --> C[输出]
-\`\`\`
-
-## 表格示例
-| 项目 | 值 |
-|:-----|:---|
-| 示例 | 数据 |`;
+        previewTab.addEventListener('click', togglePreview);
+        
+        function refreshPreview() { renderPreview(latexEditor.value); }
+        refreshPreviewBtn?.addEventListener('click', refreshPreview);
+        
+        function insertAtCursor(textarea, before, after = '') {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selected = textarea.value.substring(start, end);
+            const newValue = textarea.value.substring(0, start) + before + selected + after + textarea.value.substring(end);
+            textarea.value = newValue;
+            textarea.focus();
+            renderPreview(newValue);
+            return newValue;
         }
-
-        function updatePreview(markdown) {
-            window.lastMarkdown = markdown;
-            const preview = document.getElementById('preview');
-            
-            // 转换为HTML
-            let html = marked.parse(markdown);
-            preview.innerHTML = html;
-            
-            // 渲染公式
+        
+        // 工具栏按钮
+        document.getElementById('insert-frac')?.addEventListener('click', () => insertAtCursor(latexEditor, '\\frac{', '}{}'));
+        document.getElementById('insert-sum')?.addEventListener('click', () => insertAtCursor(latexEditor, '\\sum_{', '}^{}'));
+        document.getElementById('insert-int')?.addEventListener('click', () => insertAtCursor(latexEditor, '\\int_{', '}^{}'));
+        document.getElementById('insert-alpha')?.addEventListener('click', () => insertAtCursor(latexEditor, '\\alpha', ''));
+        document.getElementById('insert-beta')?.addEventListener('click', () => insertAtCursor(latexEditor, '\\beta', ''));
+        document.getElementById('insert-gamma')?.addEventListener('click', () => insertAtCursor(latexEditor, '\\gamma', ''));
+        document.getElementById('insert-cdot')?.addEventListener('click', () => insertAtCursor(latexEditor, '\\cdot', ''));
+        document.getElementById('insert-times')?.addEventListener('click', () => insertAtCursor(latexEditor, '\\times', ''));
+        document.getElementById('insert-matrix')?.addEventListener('click', () => {
+            insertAtCursor(latexEditor, '\n$$\n\\begin{pmatrix}\na & b \\\\\nc & d\n\\end{pmatrix}\n$$\n', '');
+        });
+        document.getElementById('insert-sqrt')?.addEventListener('click', () => insertAtCursor(latexEditor, '\\sqrt{', '}'));
+        
+        // 工具栏折叠
+        const toolbarToggle = document.getElementById('toolbar-toggle');
+        const toolbarPanel = document.getElementById('toolbar-panel');
+        let toolbarExpanded = false;
+        toolbarToggle.addEventListener('click', () => {
+            toolbarExpanded = !toolbarExpanded;
+            if (toolbarExpanded) {
+                toolbarPanel.classList.add('show');
+                toolbarToggle.querySelector('.toolbar-toggle-icon').textContent = '▼';
+                toolbarToggle.querySelector('.toolbar-toggle-text').textContent = 'LaTeX 快捷命令 (点击收起)';
+            } else {
+                toolbarPanel.classList.remove('show');
+                toolbarToggle.querySelector('.toolbar-toggle-icon').textContent = '▶';
+                toolbarToggle.querySelector('.toolbar-toggle-text').textContent = 'LaTeX 快捷命令 (点击展开)';
+            }
+        });
+        
+        // 渲染预览 - 确保所有LaTeX符号正确渲染
+        function renderPreview(content) {
+            if (!content) return;
+            preview.innerHTML = marked.parse(content);
             if (window.renderMathInElement) {
-                renderMathInElement(preview, {
+                renderMathInElement(preview, { 
                     delimiters: [
                         {left: '$$', right: '$$', display: true},
                         {left: '$', right: '$', display: false}
                     ],
-                    throwOnError: false
+                    throwOnError: false,
+                    output: 'htmlAndMathml'
                 });
             }
-            
-            // 渲染图表
-            mermaid.init(undefined, preview.querySelectorAll('.mermaid'));
-            
-            // 代码高亮
-            preview.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightElement(block);
+            preview.querySelectorAll('.mermaid').forEach(el => { 
+                try { el.innerHTML = ''; mermaid.init(undefined, el); } catch(e) { } 
+            });
+            preview.querySelectorAll('pre code').forEach(block => Prism.highlightElement(block));
+        }
+        
+        // 附件解析
+        async function parseAttachment(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            try {
+                if (file.type.startsWith('image/')) {
+                    const base64 = await fileToBase64(file);
+                    return { name: file.name, type: 'image', base64: base64, mimeType: file.type };
+                }
+                if (ext === 'csv') {
+                    const text = await file.text();
+                    return { name: file.name, type: 'csv', content: text };
+                }
+                if (ext === 'docx') {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const result = await mammoth.extractRawText({ arrayBuffer });
+                    return { name: file.name, type: 'docx', content: result.value };
+                }
+                const text = await file.text();
+                return { name: file.name, type: 'text', content: text };
+            } catch (error) {
+                return { name: file.name, type: 'error', content: `解析失败` };
+            }
+        }
+        
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
             });
         }
+        
+        // 万能AI提示词
+        async function callAI(userMessage, currentContent, attachments, apiKey, model, history) {
+            let attachmentsInfo = '';
+            for (const att of attachments) {
+                if (att.type === 'image') {
+                    attachmentsInfo += `\n[图片: ${att.name}] 用户可能希望识别图片中的内容。`;
+                } else if (att.type === 'csv') {
+                    attachmentsInfo += `\n[CSV数据: ${att.name}]\n${att.content.substring(0, 2000)}\n`;
+                } else if (att.type === 'docx' || att.type === 'text') {
+                    attachmentsInfo += `\n[文件: ${att.name}]\n${att.content.substring(0, 2000)}\n`;
+                }
+            }
+            
+            const systemPrompt = `你是一个专业的文档编辑助手，精通LaTeX、Markdown、Mermaid图表。
+
+## 当前文档内容
+${currentContent}
+
+## 附件信息
+${attachmentsInfo}
+
+## 对话历史
+${history.map(h => `${h.role === 'user' ? '用户' : '助手'}: ${h.content}`).join('\n')}
+
+## 用户指令
+${userMessage}
+
+## 你的工作方式
+你需要理解用户意图并修改文档。请遵循以下原则：
+
+### 1. 理解修改意图
+- 用户说"改成..."、"换成..."、"变成..." → 表示要替换现有内容
+- 用户说"加..."、"添加..."、"增加..." → 表示要新增内容
+- 用户说"删..."、"移除..." → 表示要删除内容
+- 用户说"把A改成B" → 找到文档中的A，替换成B
+- 用户说"把...改成红色/加粗" → 修改格式
+
+### 2. 类比推理
+当用户要求修改某种内容时，你需要理解这类内容的通用规则：
+- **图表类型转换**：找到Mermaid代码块，保留数据，只修改图表类型描述
+- **格式修改**：颜色、字体等用HTML/CSS标签
+- **LaTeX公式修改**：保持数学环境，只改内部内容
+
+### 3. 输出要求
+只输出修改后的完整文档内容，不要添加额外说明。保留所有未被修改的部分。
+
+## 重要：LaTeX符号规范
+- 点乘必须使用：$a \\cdot b$（不要用 \\cdotp）
+- 叉乘使用：$a \\times b$
+- 分数使用：$\\frac{a}{b}$
+- 根号使用：$\\sqrt{x}$
+
+现在请根据用户指令修改文档。`;
+
+            let endpoint, headers, body;
+            
+            if ((model === 'claude' || model === 'openai') && attachments.some(a => a.type === 'image')) {
+                const content = [{ type: 'text', text: systemPrompt }];
+                for (const att of attachments) {
+                    if (att.type === 'image') {
+                        if (model === 'claude') {
+                            content.push({
+                                type: 'image',
+                                source: { type: 'base64', media_type: att.mimeType, data: att.base64.split(',')[1] }
+                            });
+                        } else {
+                            content.push({ type: 'image_url', image_url: { url: att.base64, detail: 'high' } });
+                        }
+                    }
+                }
+                
+                if (model === 'claude') {
+                    endpoint = 'https://api.anthropic.com/v1/messages';
+                    headers = { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
+                    body = { model: 'claude-3-sonnet-20241022', max_tokens: 4096, messages: [{ role: 'user', content }] };
+                } else {
+                    endpoint = 'https://api.openai.com/v1/chat/completions';
+                    headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+                    body = { model: 'gpt-4-turbo', messages: [{ role: 'user', content }], max_tokens: 4096 };
+                }
+            } else {
+                endpoint = 'https://api.deepseek.com/v1/chat/completions';
+                headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+                body = { model: 'deepseek-chat', messages: [{ role: 'user', content: systemPrompt }], temperature: 0.7, max_tokens: 4096 };
+            }
+            
+            const response = await fetch(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(body) });
+            if (!response.ok) throw new Error(`API请求失败: ${response.status}`);
+            const data = await response.json();
+            let result = model === 'claude' ? data.content[0].text : data.choices[0].message.content;
+            // 统一将 \cdotp 替换为 \cdot
+            result = result.replace(/\\cdotp/g, '\\cdot');
+            return result;
+        }
+        
+        async function aiProcess(userMessage, attachments, currentContent, apiKey, model, history) {
+            if (!apiKey || apiKey.trim() === '') {
+                return { content: currentContent, desc: `请填写API密钥` };
+            }
+            
+            try {
+                const newContent = await callAI(userMessage, currentContent, attachments, apiKey, model, history);
+                return { content: newContent, desc: `已处理` };
+            } catch (error) {
+                return { content: currentContent, desc: `调用失败: ${error.message}` };
+            }
+        }
+        
+        async function sendMessage() {
+            const message = promptInput.value.trim();
+            if (!message && pendingAttachments.length === 0) {
+                addMessage('请输入指令或上传附件', 'assistant');
+                return;
+            }
+            if (!message) {
+                addMessage('请输入指令', 'assistant');
+                return;
+            }
+            
+            let userDisplay = message;
+            if (pendingAttachments.length > 0) {
+                userDisplay += `\n\n📎 附件: ${pendingAttachments.map(a => a.name).join(', ')}`;
+            }
+            addMessage(userDisplay, 'user');
+            promptInput.value = '';
+            
+            conversationHistory.push({ role: 'user', content: message });
+            const loadingId = addLoadingMessage();
+            
+            try {
+                const currentContent = latexEditor.value;
+                const attachments = [...pendingAttachments];
+                
+                const result = await aiProcess(message, attachments, currentContent, apiKeyInput.value, modelSelect.value, conversationHistory);
+                
+                removeLoadingMessage(loadingId);
+                
+                if (result.content !== currentContent) {
+                    latexEditor.value = result.content;
+                    renderPreview(result.content);
+                }
+                
+                conversationHistory.push({ role: 'assistant', content: result.desc });
+                pendingAttachments = [];
+                renderAttachmentsList();
+                addMessage(result.desc, 'assistant');
+                
+            } catch (error) {
+                removeLoadingMessage(loadingId);
+                addMessage(`处理失败: ${error.message}`, 'assistant');
+            }
+        }
+        
+        function renderAttachmentsList() {
+            fileAttachments.innerHTML = '';
+            for (const file of pendingAttachments) {
+                const div = document.createElement('div');
+                div.className = 'file-attachment';
+                div.dataset.filename = file.name;
+                div.innerHTML = `<span class="file-name">📎 ${file.name}</span><span class="file-remove" onclick="removeAttachment('${file.name}')">✕</span>`;
+                fileAttachments.appendChild(div);
+            }
+        }
+        
+        window.removeAttachment = function(name) {
+            pendingAttachments = pendingAttachments.filter(f => f.name !== name);
+            renderAttachmentsList();
+            addMessage(`已移除: ${name}`, 'assistant');
+        };
+        
+        if (attachBtn) attachBtn.addEventListener('click', () => fileInput.click());
+        if (fileInput) fileInput.addEventListener('change', async (e) => {
+            for (const file of e.target.files) {
+                const parsed = await parseAttachment(file);
+                pendingAttachments.push(parsed);
+                addMessage(`📎 已添加: ${file.name}`, 'assistant');
+            }
+            renderAttachmentsList();
+            fileInput.value = '';
+        });
+        
+        const examples = [
+            "写一段克拉伯龙方程推导",
+            "生成一个散点图，x轴1-5，y轴10,20,15,25,30",
+            "把散点图改成曲线图",
+            "把标题改成红色",
+            "在最后加一个数据表格"
+        ];
+        let exampleIndex = 0;
+        if (templateBtn) templateBtn.addEventListener('click', () => {
+            promptInput.value = examples[exampleIndex];
+            exampleIndex = (exampleIndex + 1) % examples.length;
+        });
+        
+        if (clearChatBtn) clearChatBtn.addEventListener('click', () => {
+            conversationHistory = [];
+            messagesContainer.innerHTML = '';
+            messagesContainer.innerHTML = `<div class="message welcome-message"><div class="message-avatar">🤖</div><div class="message-content"><div class="message-sender">LaTeX助手</div><div class="message-text">对话已清空，可以开始新的对话。</div></div></div>`;
+            addMessage('对话已清空', 'assistant');
+        });
+        
+        if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+        if (promptInput) promptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        });
+        
+        function addMessage(text, role) {
+            const div = document.createElement('div');
+            div.className = `message ${role === 'user' ? 'user-message' : ''}`;
+            div.innerHTML = `<div class="message-avatar">${role === 'user' ? '👤' : '🤖'}</div><div class="message-content"><div class="message-sender">${role === 'user' ? '你' : 'LaTeX助手'}</div><div class="message-text">${marked.parse(text)}</div></div>`;
+            messagesContainer.appendChild(div);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            if (window.renderMathInElement) {
+                renderMathInElement(div, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}], throwOnError: false });
+            }
+        }
+        
+        function addLoadingMessage() {
+            const id = 'loading-' + Date.now();
+            const div = document.createElement('div');
+            div.className = 'message'; div.id = id;
+            div.innerHTML = `<div class="message-avatar">🤖</div><div class="message-content"><div class="message-sender">LaTeX助手</div><div class="message-text">⏳ AI正在理解并处理...</div></div>`;
+            messagesContainer.appendChild(div);
+            return id;
+        }
+        
+        function removeLoadingMessage(id) { document.getElementById(id)?.remove(); }
+        
+        async function exportToPDF() {
+            const previewEl = document.querySelector('.a4-preview');
+            try {
+                const canvas = await html2canvas(previewEl, { scale: 2, backgroundColor: '#ffffff' });
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const imgWidth = 190, imgHeight = (canvas.height * imgWidth) / canvas.width;
+                const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+                pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+                pdf.save('文档.pdf');
+                addMessage('PDF导出成功', 'assistant');
+            } catch(e) { addMessage('导出失败', 'assistant'); }
+        }
+        
+        function exportToWord() {
+            const html = preview.innerHTML;
+            const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:system-ui;padding:40px;max-width:800px;margin:0 auto;}</style></head><body>${html}</body></html>`], {type: 'application/msword'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = '文档.doc'; a.click(); URL.revokeObjectURL(url);
+            addMessage('Word文档导出成功', 'assistant');
+        }
+        
+        function copyContent() {
+            navigator.clipboard.writeText(latexEditor.value);
+            addMessage('已复制到剪贴板', 'assistant');
+        }
+        
+        function clearEditor() {
+            latexEditor.value = '';
+            renderPreview('');
+            addMessage('编辑器已清空', 'assistant');
+        }
+        
+        document.getElementById('export-pdf-btn')?.addEventListener('click', exportToPDF);
+        document.getElementById('export-word-btn')?.addEventListener('click', exportToWord);
+        document.getElementById('copy-tex-btn')?.addEventListener('click', copyContent);
+        document.getElementById('clear-editor-btn')?.addEventListener('click', clearEditor);
+        
+        renderPreview(latexEditor.value);
+    })();
     </script>
 </body>
 </html>

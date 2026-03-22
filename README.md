@@ -1,4 +1,4 @@
-# LaTex-assistant
+# Tex-assistant
 解决使用ai输出文本的时候常遇见的格式不易阅读、不方便插入现有文件等问题。
 
 ## 功能特点
